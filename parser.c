@@ -5,9 +5,21 @@
 
 #include "defs.h"
 
+static void add_dependency(Target*, const char*);
+static void add_target(Target*, TargetList*);
 static char* trim(char*);
 
-int parse() {
+void add_dependency(Target* target, const char* dep) {
+    target->deps = (char**) realloc(target->deps, (target->num_deps + 1) * sizeof(char*));
+    target->deps[target->num_deps++] = strdup(dep);
+}
+
+void add_target(Target* target, TargetList* list) {
+    target->next = list->head;
+    list->head = target;
+}
+
+int parse(TargetList* targets) {
     FILE* f = fopen("Makefile", "r");
 
     if (f == NULL) {
@@ -25,6 +37,7 @@ int parse() {
         if (*str == '\t') {
             if (!current) {
                 fprintf(stderr, "Error: Command without target.\n");
+                fclose(f);
                 exit(1);
             }
 
@@ -49,6 +62,7 @@ int parse() {
 
             if (!colon) {
                 fprintf(stderr, "Error: line %d is invalid.\n", counter);
+                fclose(f);
                 exit(1);
             }
 
@@ -59,9 +73,31 @@ int parse() {
             trim(deps);
             trim(str);
 
-            printf("target:%s!  deps:%s!\n", str, deps);
-
             current = (Target*) malloc(sizeof(Target));
+            current->name = strdup(str);
+            current->deps = NULL;
+            current->num_deps = 0;
+            current->command = NULL;
+            current->flags = TARGET_PENDING;
+            current->next = NULL;
+
+            // add dependencies
+            char* token = strtok(deps, " ");
+
+            while (token) {
+                trim(token);
+                add_dependency(current, token);
+                token = strtok(NULL, " ");
+            }
+
+            // for debugging
+            printf("target:%s!  deps:", current->name);
+
+            for (int i = 0; i < current->num_deps; i++) {
+                printf("%s,", current->deps[i]);
+            }
+
+            printf("\n");
         }
     }
 
@@ -121,16 +157,4 @@ char* trim(char* str) {
     }
     
     return str;
-}
-
-int main() {
-    // char str[12] = "    123    ";
-
-    // trim(str);
-
-    // printf("%d", (int) strlen(str));
-
-    parse();
-
-    return 0;
 }

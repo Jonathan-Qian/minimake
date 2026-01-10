@@ -57,4 +57,6 @@ typedef struct BuildContext {
     sem_t job_limit;
 } BuildContext;
 
+int parse(TargetList*);
+
 #endif
