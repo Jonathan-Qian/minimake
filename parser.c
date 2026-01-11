@@ -5,13 +5,13 @@
 
 #include "defs.h"
 
-static void add_dependency(Target*, const char*);
+static void add_string(char***, int*, const char*);
 static void add_target(Target*, TargetList*);
 static char* trim(char*);
 
-void add_dependency(Target* target, const char* dep) {
-    target->deps = (char**) realloc(target->deps, (target->num_deps + 1) * sizeof(char*));
-    target->deps[target->num_deps++] = strdup(dep);
+void add_string(char*** list, int* n, const char* str) {
+    *list = (char**) realloc(*list, (*n + 1) * sizeof(char*));
+    *list[(*n)++] = strdup(str);
 }
 
 void add_target(Target* target, TargetList* list) {
@@ -42,13 +42,7 @@ int parse(TargetList* targets) {
             }
 
             trim(str);
-
-            if (current->command != NULL) {
-                free(current->command);
-                fprintf(stderr, "Warning: Multiple commands for target %s. This is currently not supported. The last command associated with this target will be used.\n", current->name);
-            }
-
-            current->command = strdup(str);
+            add_string(&(current->commands), &(current->num_commands), str);
         }
         else {
             trim(str);
@@ -77,7 +71,9 @@ int parse(TargetList* targets) {
             current->name = strdup(str);
             current->deps = NULL;
             current->num_deps = 0;
-            current->command = NULL;
+            current->target_deps = 0;
+            current->commands = NULL;
+            current->num_commands = 0;
             current->flags = TARGET_PENDING;
             current->next = NULL;
 
@@ -86,7 +82,7 @@ int parse(TargetList* targets) {
 
             while (token) {
                 trim(token);
-                add_dependency(current, token);
+                add_string(&(current->deps), &(current->num_deps), token);
                 token = strtok(NULL, " ");
             }
 
@@ -98,6 +94,8 @@ int parse(TargetList* targets) {
             }
 
             printf("\n");
+
+            add_target(current, targets);
         }
     }
 

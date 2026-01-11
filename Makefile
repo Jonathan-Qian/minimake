@@ -1,3 +1,5 @@
+all: minimake
+
 minimake: main.o parser.o
 	gcc -o minimake main.o parser.o
 

@@ -21,7 +21,9 @@ typedef struct Target {
     char* name;
     char** deps;
     int num_deps;
-    char* command;
+    int target_deps;
+    char** commands;
+    int num_commands;
     uint8_t flags;
     struct Target* next;
 } Target;
