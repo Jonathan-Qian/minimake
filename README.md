@@ -12,8 +12,8 @@ The syntax is very similar to Makefile syntax.
     - targets without commands are allowed
     - a target cannot have the same name as another target
 ### 2. Command
-    - commands must start with a tab character ('\t') (i.e. there cannot be any other whitespace in front of the tab)
-    - commands without a target are not allowed
+    - each command must start with a tab character ('\t') (i.e. there cannot be any other whitespace in front of the tab)
+    - recipes without a target are not allowed
     - multiple commands for one target are allowed
 
 ### 3. Comments
@@ -21,12 +21,12 @@ The syntax is very similar to Makefile syntax.
     - inline comments are not allowed
 
 Whitespaces or the lack of whitespaces are allowed on any line as long as it follows these rules previously stated:
-    - commands must start with a tab character ('\t') (i.e. there cannot be any other whitespace in front of the tab)
+    - each command must start with a tab character ('\t') (i.e. there cannot be any other whitespace in front of the tab)
     - dependencies must be separated from each other by at least one space character (' ')
 
 ## Implemented:
 - Makefile parsing (+invalid syntax detection)
-- Support for multiple commands per target
+- Support for multiple commands per target (recipe)
 - Dependency graph construction
 - Circular dependency detection
 

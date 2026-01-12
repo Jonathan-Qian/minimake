@@ -40,23 +40,17 @@ typedef struct Target {
     struct Target* next;
 } Target;
 
-typedef struct Task {
-    Target* target;
-    struct Task* next;
-} Task;
-
 typedef struct TaskQueue {
-    Task* head;
-    Task* tail;
+    Target* head;
+    Target* tail;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
 } TaskQueue;
 
 typedef struct ThreadPool {
     pthread_t* threads;
-    int thread_count;
+    int num_threads;
     TaskQueue queue;
-    bool running;
 } ThreadPool;
 
 typedef struct BuildContext {
@@ -75,6 +69,11 @@ void init_target(Target*, const char*);
 void print_target(Target*);
 
 void build_graph(TargetList*);
-int dfs(Target*);
+int traverse(TaskQueue*, Target*);
+
+void init_thread_pool(ThreadPool*, int);
+void start_thread_pool(ThreadPool*);
+void enqueue(TaskQueue*, Target*);
+Target* dequeue(TaskQueue*);
 
 #endif

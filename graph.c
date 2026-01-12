@@ -23,25 +23,29 @@ void build_graph(TargetList* targets) {
     }
 }
 
-// traverses the graph starting from target to mark all relevant dependencies and detect any cycles
-int dfs(Target* target) {
+// traverses the graph starting from target to mark all relevant dependencies, detect any cycles and enqueue the first runnable targets
+int traverse(TaskQueue* q, Target* target) {
     target->flags = target->flags | TARGET_VISITING;
 
-    for (int i = 0; i < target->dependencies.size; i++) {
-        if ((target->dependencies.arr[i]->flags & TARGET_VISITED) == TARGET_VISITED) {
-            continue;
+    if (target->dependencies.size == 0) {
+        enqueue(q, target);
+    }
+    else {
+        for (int i = 0; i < target->dependencies.size; i++) {
+            if ((target->dependencies.arr[i]->flags & TARGET_VISITED) == TARGET_VISITED) {
+                continue;
+            }
+            else if ((target->dependencies.arr[i]->flags & TARGET_VISITING) == TARGET_VISITING) {
+                fprintf(stderr, "Error: circular dependency detected.");
+                exit(1);
+            }
+            
+            // if the target is not visited or being visited, then it is unvisited
+            traverse(q, target->dependencies.arr[i]);
         }
-        else if ((target->dependencies.arr[i]->flags & TARGET_VISITING) == TARGET_VISITING) {
-            fprintf(stderr, "Error: circular dependency detected.");
-            exit(1);
-        }
-        
-        // if the target is not visited or being visited, then it is unvisited
-        dfs(target->dependencies.arr[i]);
     }
 
     target->flags = target->flags | TARGET_VISITED;
 
-    printf("\n\n\n\nreturning 0\n\n\n\n");
     return 0;
 }
