@@ -2,6 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "defs.h"
 
@@ -13,8 +14,8 @@ void add_string(char*** list, int* n, const char* str) {
     (*list)[(*n)++] = strdup(str);
 }
 
-int parse(TargetList* targets) {
-    FILE* f = fopen("Makefile", "r");
+int parse(BuildContext* build_context, const char* argument_target) {
+    FILE* f = fopen("Minimakefile", "r");
 
     if (f == NULL) {
         return ERROR_IO;
@@ -30,9 +31,8 @@ int parse(TargetList* targets) {
 
         if (*str == '\t') {
             if (!current) {
-                fprintf(stderr, "Error: Command without target.\n");
                 fclose(f);
-                exit(1);
+                return ERROR_TARGET;
             }
 
             trim(str);
@@ -51,7 +51,7 @@ int parse(TargetList* targets) {
             if (!colon) {
                 fprintf(stderr, "Error: line %d is invalid.\n", counter);
                 fclose(f);
-                exit(1);
+                return ERROR_INVALID;
             }
 
             *colon = '\0';
@@ -61,23 +61,44 @@ int parse(TargetList* targets) {
             trim(deps);
             trim(str);
 
+            // duplicate target check
+            for (int i = 0; i < build_context->targets.size; i++) {
+                if (strcmp(str, build_context->targets.arr[i]->name) == 0) {
+                    fprintf(stderr, "Error: target %s appears more than once.\n", str);
+                    fclose(f);
+                    return ERROR_DUPLICATE;
+                }
+            }
+
             current = (Target*) malloc(sizeof(Target));
             init_target(current, str);
-            
+
             // add dependencies
             char* token = strtok(deps, " ");
 
             while (token) {
                 trim(token);
-                add_string(&(current->dependencies), &(current->num_dependencies), token);
+                add_string(&(current->dependencies_names), &(current->num_dependencies_names), token);
                 token = strtok(NULL, " ");
             }
+            
+            if (argument_target != NULL && strcmp(str, argument_target) == 0) {
+                build_context->argument_target_index = build_context->targets.size;
+            }
 
-            add_target(current, targets);
+            add_target(current, &(build_context->targets));
         }
     }
 
     fclose(f);
+
+    if (argument_target == NULL) {
+        build_context->argument_target_index = 0;
+    }
+    else if (build_context->argument_target_index < 0) {
+        fprintf(stderr, "Error: target %s not found.\n", argument_target);
+        return ERROR_TARGET_NOT_FOUND;
+    }
 
     return 0;
 }

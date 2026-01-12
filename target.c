@@ -11,9 +11,10 @@ void add_target(Target* target, TargetList* list) {
 
 void init_target(Target* target, const char* name) {
     target->name = strdup(name);
-    target->dependencies = NULL;
-    target->num_dependencies = 0;
-    target->num_target_dependencies = 0;
+    target->dependencies_names = NULL;
+    target->num_dependencies_names = 0;
+    target->dependencies.arr = NULL;
+    target->dependencies.size = 0;
     target->dependents.arr = NULL;
     target->dependents.size = 0;
     target->commands = NULL;
@@ -23,10 +24,16 @@ void init_target(Target* target, const char* name) {
 }
 
 void print_target(Target* target) {
-    printf("Name: %s\nDependencies (%d): ", target->name, target->num_dependencies);
+    printf("Name: %s\nTarget Dependencies (%d): ", target->name, target->dependencies.size);
     
-    for (int i = 0; i < target->num_dependencies; i++) {
-        printf("%s, ", target->dependencies[i]);
+    for (int i = 0; i < target->dependencies.size; i++) {
+        printf("%s, ", target->dependencies.arr[i]->name);
+    }
+
+    printf("\nDependencies (%d): ", target->num_dependencies_names);
+    
+    for (int i = 0; i < target->num_dependencies_names; i++) {
+        printf("%s, ", target->dependencies_names[i]);
     }
 
     printf("\nCommands (%d):\n", target->num_commands);
@@ -41,5 +48,9 @@ void print_target(Target* target) {
         printf("%s, ", target->dependents.arr[i]->name);
     }
 
-    printf("\n\n");
+    if ((target->flags & TARGET_VISITING) && !(target->flags & TARGET_VISITED)) {
+        printf("\n\n\n\nThe DFS traversal broke.\n\n\n\n");
+    }
+
+    printf("\nVisited: %s\n\n", (target->flags & TARGET_VISITED) ? "Yes" : "No");
 }

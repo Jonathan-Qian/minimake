@@ -10,6 +10,7 @@ The syntax is very similar to Makefile syntax.
     - target lines must contain a colon character (':') separating the target name and the dependencies
     - any number of dependencies is ok including zero
     - targets without commands are allowed
+    - a target cannot have the same name as another target
 ### 2. Command
     - commands must start with a tab character ('\t') (i.e. there cannot be any other whitespace in front of the tab)
     - commands without a target are not allowed
@@ -26,13 +27,19 @@ Whitespaces or the lack of whitespaces are allowed on any line as long as it fol
 ## Implemented:
 - Makefile parsing (+invalid syntax detection)
 - Support for multiple commands per target
+- Dependency graph construction
+- Circular dependency detection
+
+### Note:
+- Circular dependencies will only be detected if those dependencies are dependencies of the target provided as a command line argument
+- Likewise, missing files (i.e. dependencies that aren't targets and are missing) will only be detected if the missing files are dependencies of targets that are dependencies of the target provided as a command line argument
+- Like make, if the program is run without a specified target, it will pick the first target
 
 ## Limitations:
 - The program will only read a file named exactly "Makefile"
 - A single line in the Makefile can be at most 1023 characters long (including \n but not including \0)
 - No variables, conditionals, etc.
+- Unlike make, duplicate targets are not supported
 
 ## To do:
-- Dependency graph construction
-- Circular dependency detection
 - Scheduler
