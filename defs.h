@@ -17,20 +17,22 @@ typedef enum Flag {
     TARGET_FAILED   = 1 << 3
 } Flag;
 
+typedef struct TargetList {
+    struct Target** arr;
+    int size;
+} TargetList;
+
 typedef struct Target {
     char* name;
-    char** deps;
-    int num_deps;
-    int target_deps;
+    char** dependencies;
+    int num_dependencies;
+    int num_target_dependencies;
+    TargetList dependents;
     char** commands;
     int num_commands;
     uint8_t flags;
     struct Target* next;
 } Target;
-
-typedef struct TargetList {
-    Target* head;
-} TargetList;
 
 typedef struct Task {
     Target* target;
@@ -60,5 +62,11 @@ typedef struct BuildContext {
 } BuildContext;
 
 int parse(TargetList*);
+
+void add_target(Target*, TargetList*);
+void init_target(Target*, const char*);
+void print_target(Target*);
+
+void build_graph(TargetList*);
 
 #endif

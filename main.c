@@ -4,16 +4,15 @@
 
 int main() {
     BuildContext buildContext;
-    buildContext.targets.head = NULL;
+    buildContext.targets.arr = NULL;
+    buildContext.targets.size = 0;
 
     parse(&(buildContext.targets));
+    build_graph(&(buildContext.targets));
 
-    // for debugging
-    Target* current = buildContext.targets.head;
-    
-    while (current) {
-        printf("%s\n", current->name);
-        current = current->next;
+
+    for (int i = 0; i < buildContext.targets.size; i++) {
+        print_target(buildContext.targets.arr[i]);
     }
 
     return 0;

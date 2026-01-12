@@ -6,17 +6,11 @@
 #include "defs.h"
 
 static void add_string(char***, int*, const char*);
-static void add_target(Target*, TargetList*);
 static char* trim(char*);
 
 void add_string(char*** list, int* n, const char* str) {
     *list = (char**) realloc(*list, (*n + 1) * sizeof(char*));
-    *list[(*n)++] = strdup(str);
-}
-
-void add_target(Target* target, TargetList* list) {
-    target->next = list->head;
-    list->head = target;
+    (*list)[(*n)++] = strdup(str);
 }
 
 int parse(TargetList* targets) {
@@ -68,32 +62,16 @@ int parse(TargetList* targets) {
             trim(str);
 
             current = (Target*) malloc(sizeof(Target));
-            current->name = strdup(str);
-            current->deps = NULL;
-            current->num_deps = 0;
-            current->target_deps = 0;
-            current->commands = NULL;
-            current->num_commands = 0;
-            current->flags = TARGET_PENDING;
-            current->next = NULL;
-
+            init_target(current, str);
+            
             // add dependencies
             char* token = strtok(deps, " ");
 
             while (token) {
                 trim(token);
-                add_string(&(current->deps), &(current->num_deps), token);
+                add_string(&(current->dependencies), &(current->num_dependencies), token);
                 token = strtok(NULL, " ");
             }
-
-            // for debugging
-            printf("target:%s!  deps:", current->name);
-
-            for (int i = 0; i < current->num_deps; i++) {
-                printf("%s,", current->deps[i]);
-            }
-
-            printf("\n");
 
             add_target(current, targets);
         }
