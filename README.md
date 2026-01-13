@@ -29,6 +29,7 @@ Whitespaces or the lack of whitespaces are allowed on any line as long as it fol
 - Support for multiple commands per target (recipe)
 - Dependency graph construction
 - Circular dependency detection
+- Failure propagation
 
 ### Note:
 - Circular dependencies will only be detected if those dependencies are dependencies of the target provided as a command line argument
@@ -36,10 +37,12 @@ Whitespaces or the lack of whitespaces are allowed on any line as long as it fol
 - Like make, if the program is run without a specified target, it will pick the first target
 
 ## Limitations:
-- The program will only read a file named exactly "Makefile"
+- The program will only read a file named exactly "Minimakefile"
 - A single line in the Makefile can be at most 1023 characters long (including \n but not including \0)
+- A command can have at most 63 arguments including the program name (perhaps I will change this in the future)
 - No variables, conditionals, etc.
 - Unlike make, duplicate targets are not supported
+- Inputting multiple command line arguments to make multiple targets at once is not yet supported (ex. make test main)
 
 ## To do:
 - Scheduler

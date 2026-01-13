@@ -6,12 +6,10 @@
 static int get_core_count();
 
 int main(int argc, char *argv[]) {
-    BuildContext buildContext;
-    buildContext.targets.arr = NULL;
-    buildContext.targets.size = 0;
-    buildContext.argument_target_index = -1;
+    BuildContext build_context;
+    init_build_context(&build_context);
 
-    int code = parse(&buildContext, argv[1]); // argv[1] == NULL if ran with no specified target
+    int code = parse(&build_context, argv[1]); // argv[1] == NULL if ran with no specified target
 
     if (code) {
         char* err = NULL;
@@ -32,24 +30,11 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    build_graph(&(buildContext.targets));
-
-    init_thread_pool(&(buildContext.pool), get_core_count());
-
-    traverse(&(buildContext.pool.queue), buildContext.targets.arr[buildContext.argument_target_index]);
-
-    // for debugging purposes
-    for (int i = 0; i < buildContext.targets.size; i++) {
-        print_target(buildContext.targets.arr[i]);
-    }
-
-    TaskQueue* q = &(buildContext.pool.queue);
-    Target* t = q->head;
-
-    while (t) {
-        printf("%s -> ", t->name);
-        t = t->next;
-    }
+    build_graph(&(build_context.targets));
+    init_thread_pool(&(build_context.pool), get_core_count());
+    traverse(&(build_context.pool.queue), build_context.targets.arr[build_context.argument_target_index]);
+    complete_tasks(&build_context);
+    free_all(&build_context);
 
     return 0;
 }

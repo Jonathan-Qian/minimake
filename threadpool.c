@@ -1,5 +1,7 @@
 #include <pthread.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #include "defs.h"
 
@@ -12,17 +14,25 @@ void init_thread_pool(ThreadPool* pool, int num_threads) {
     pool->queue.tail = NULL;
     pthread_mutex_init(&(pool->queue.mutex), NULL);
     pthread_cond_init(&(pool->queue.cond), NULL);
+    pool->stop = false;
 }
 
-void start_thread_pool(ThreadPool* pool) {
-    pthread_t* threads = pool->threads;
+void complete_tasks(BuildContext* context) {
+    pthread_t* threads = context->pool.threads;
 
-    for (int i = 0; i < pool->num_threads; i++) {
-        pthread_create(threads + i, NULL, worker, NULL);
+    for (int i = 0; i < context->pool.num_threads; i++) {
+        pthread_create(threads + i, NULL, worker, context);
+    }
+
+    for (int i = 0; i < context->pool.num_threads; i++) {
+        pthread_join(threads[i], NULL);
     }
 }
 
 void enqueue(TaskQueue* queue, Target* target) {
+    target->flags = target->flags | TARGET_SCHEDULED;
+    target->next = NULL;
+
     if (queue->tail) {
         queue->tail->next = target;
     }
@@ -38,28 +48,72 @@ Target* dequeue(TaskQueue* queue) {
 
     if (t) {
         queue->head = t->next;
+
+        if (!queue->head) {
+            queue->tail = NULL;
+        }
+
+        t->next = NULL;
     }
-    else if (!(queue->head)) {
+    else {
         queue->tail = NULL;
     }
 
     return t;
 }
 
-void* worker(void* q) {
-    TaskQueue* queue = ((TaskQueue*) q);
+void* worker(void* b) {
+    BuildContext* build_context = ((BuildContext*) b);
+    TaskQueue* queue = &(build_context->pool.queue);
+    int code = 0;
 
     while (1) {
         Target* t;
+
         pthread_mutex_lock(&(queue->mutex));
 
-        if (!(t = dequeue(queue))) {
+        while ((t = dequeue(queue)) == NULL && !build_context->pool.stop) {
             pthread_cond_wait(&(queue->cond), &(queue->mutex));
-            t = dequeue(queue);
         }
 
         pthread_mutex_unlock(&(queue->mutex));
 
+        if (build_context->pool.stop) {
+            break;
+        }
 
+        code = build_target(t, code, build_context);
+
+        if (t == build_context->targets.arr[build_context->argument_target_index]) {
+            pthread_mutex_lock(&(queue->mutex));
+            build_context->pool.stop = true;
+            pthread_cond_broadcast(&(queue->cond));
+            pthread_mutex_unlock(&(queue->mutex));
+            break;
+        }
+        else {
+            Target* d;
+
+            for (int i = 0; i < t->dependents.size; i++) {
+                d = t->dependents.arr[i];
+
+                pthread_mutex_lock(&(d->num_mutex));
+                d->num_remaining_targets--;
+                pthread_mutex_lock(&(queue->mutex));
+
+                if (d->num_remaining_targets == 0 && (d->flags & TARGET_SCHEDULED) == 0) {
+                    pthread_mutex_unlock(&(d->num_mutex));
+                    enqueue(queue, d);
+                    pthread_cond_signal(&(queue->cond));
+                    pthread_mutex_unlock(&(queue->mutex));
+                }
+                else {
+                    pthread_mutex_unlock(&(d->num_mutex));
+                    pthread_mutex_unlock(&(queue->mutex));
+                }
+            }
+        }
     }
+
+    return NULL;
 }

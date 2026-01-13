@@ -17,6 +17,7 @@ void build_graph(TargetList* targets) {
                 if (strcmp(ti->name, tj->dependencies_names[k]) == 0) {
                     add_target(tj, &(ti->dependents));
                     add_target(ti, &(tj->dependencies));
+                    tj->num_remaining_targets++;
                 }
             }
         }
@@ -27,7 +28,7 @@ void build_graph(TargetList* targets) {
 int traverse(TaskQueue* q, Target* target) {
     target->flags = target->flags | TARGET_VISITING;
 
-    if (target->dependencies.size == 0) {
+    if (target->num_remaining_targets == 0) {
         enqueue(q, target);
     }
     else {
