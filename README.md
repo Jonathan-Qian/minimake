@@ -30,6 +30,7 @@ Whitespaces or the lack of whitespaces are allowed on any line as long as it fol
 - Dependency graph construction
 - Circular dependency detection
 - Failure propagation
+- Scheduler
 
 ### Note:
 - Circular dependencies will only be detected if those dependencies are dependencies of the target provided as a command line argument
@@ -43,6 +44,3 @@ Whitespaces or the lack of whitespaces are allowed on any line as long as it fol
 - No variables, conditionals, etc.
 - Unlike make, duplicate targets are not supported
 - Inputting multiple command line arguments to make multiple targets at once is not yet supported (ex. make test main)
-
-## To do:
-- Scheduler
