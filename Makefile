@@ -25,3 +25,6 @@ buildcontext.o: buildcontext.c defs.h
 
 clean:
 	rm -f *.o minimake
+
+o:
+	rm -f *.o minimake2

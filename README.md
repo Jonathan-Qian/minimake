@@ -44,3 +44,7 @@ Whitespaces or the lack of whitespaces are allowed on any line as long as it fol
 - No variables, conditionals, etc.
 - Unlike make, duplicate targets are not supported
 - Inputting multiple command line arguments to make multiple targets at once is not yet supported (ex. make test main)
+
+## Potential Problems:
+- Logging bottleneck?
+- Job limit to reduce memory pressure
