@@ -41,10 +41,12 @@ int traverse(TaskQueue* q, Target* target) {
                 exit(1);
             }
             
-            // if the target is not visited or being visited, then it is unvisited
+            // if the target is not fully visited or being visited, then it is unvisited
             traverse(q, target->dependencies.arr[i]);
         }
     }
+
+    free(target->dependencies.arr); // the targets pointed to by the target list will be freed later through the master target list in the build context
 
     target->flags = target->flags | TARGET_VISITED;
 

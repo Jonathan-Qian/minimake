@@ -33,8 +33,9 @@ int main(int argc, char *argv[]) {
     build_graph(&(build_context.targets));
     init_thread_pool(&(build_context.pool), get_core_count());
     traverse(&(build_context.pool.queue), build_context.targets.arr[build_context.argument_target_index]);
+    free_irrelevant_targets(&(build_context));
     complete_tasks(&build_context);
-    free_all(&build_context);
+    free_rest(&build_context);
 
     return 0;
 }

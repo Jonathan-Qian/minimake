@@ -35,15 +35,15 @@ void init_target(Target* target, const char* name) {
 
 int build_target(Target* target, int skip, BuildContext* b) {
     target->flags = target->flags | TARGET_BUILDING;
-    
-    bool u_t_d = true;
 
     if (skip == ERROR_TARGET_FAILED) {
         target->flags = target->flags | TARGET_SKIPPED;
         return ERROR_TARGET_FAILED;
     }
-    else if (!up_to_date(target, b)) {
-        u_t_d = false;
+    
+    bool u_t_d = up_to_date(target, b);
+    
+    if (!u_t_d) {
 
         char* command;
         pid_t pid;
@@ -52,9 +52,9 @@ int build_target(Target* target, int skip, BuildContext* b) {
         for (int i = 0; i < target->num_commands; i++) {
             command = target->commands[i];
 
-            pthread_mutex_lock(&(b->log_mutex));
-            printf("%s\n", command);
-            pthread_mutex_unlock(&(b->log_mutex));
+            // pthread_mutex_lock(&(b->log_mutex));
+            // printf("%s\n", command);
+            // pthread_mutex_unlock(&(b->log_mutex));
 
             char *argv[MAX_ARGS];
             int i = 0;
@@ -77,9 +77,9 @@ int build_target(Target* target, int skip, BuildContext* b) {
             waitpid(pid, &status, 0);
 
             if (WIFEXITED(status) == 0) {
-                pthread_mutex_lock(&(b->log_mutex));
-                fprintf(stderr, "Error: target %s failed building. The following command did not execute properly:\n%s\n", target->name, command);
-                pthread_mutex_unlock(&(b->log_mutex));
+                // pthread_mutex_lock(&(b->log_mutex));
+                // fprintf(stderr, "Error: target %s failed building. The following command did not execute properly:\n%s\n", target->name, command);
+                // pthread_mutex_unlock(&(b->log_mutex));
 
                 target->flags = target->flags | TARGET_FAILED;
 
@@ -104,9 +104,9 @@ bool up_to_date(Target* target, BuildContext* b) {
     for (int i = 0; i < target->num_dependencies_names; i++) {
         // checking if dependency exists
         if (stat(target->dependencies_names[i], &dep_stat) != 0) {
-            pthread_mutex_lock(&(b->log_mutex));
-            fprintf(stderr, "Error: target %s has file dependency %s that could not be accessed.\n", target->name, target->dependencies_names[i]);
-            pthread_mutex_unlock(&(b->log_mutex));
+            // pthread_mutex_lock(&(b->log_mutex));
+            // fprintf(stderr, "Error: target %s has file dependency %s that could not be accessed.\n", target->name, target->dependencies_names[i]);
+            // pthread_mutex_unlock(&(b->log_mutex));
             exit(1);
         }
 
@@ -118,35 +118,3 @@ bool up_to_date(Target* target, BuildContext* b) {
 
     return true;
 }
-
-// void print_target(Target* target) {
-//     printf("Name: %s\nTarget Dependencies (%d): ", target->name, target->dependencies.size);
-    
-//     for (int i = 0; i < target->dependencies.size; i++) {
-//         printf("%s, ", target->dependencies.arr[i]->name);
-//     }
-
-//     printf("\nDependencies (%d): ", target->num_dependencies_names);
-    
-//     for (int i = 0; i < target->num_dependencies_names; i++) {
-//         printf("%s, ", target->dependencies_names[i]);
-//     }
-
-//     printf("\nCommands (%d):\n", target->num_commands);
-
-//     for (int i = 0; i < target->num_commands; i++) {
-//         printf("%s\n", target->commands[i]);
-//     }
-
-//     printf("Dependents (%d): ", target->dependents.size);
-
-//     for (int i = 0; i < target->dependents.size; i++) {
-//         printf("%s, ", target->dependents.arr[i]->name);
-//     }
-
-//     if ((target->flags & TARGET_VISITING) && !(target->flags & TARGET_VISITED)) {
-//         printf("\n\n\n\nThe DFS traversal broke.\n\n\n\n");
-//     }
-
-//     printf("\nVisited: %s\n\n", (target->flags & TARGET_VISITED) ? "Yes" : "No");
-// }

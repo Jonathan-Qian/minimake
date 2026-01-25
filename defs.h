@@ -37,7 +37,7 @@ typedef struct Target {
     char* name;
     char** dependencies_names;
     int num_dependencies_names;
-    TargetList dependencies;
+    TargetList dependencies; // freed during graph traversal
     TargetList dependents;
     char** commands;
     int num_commands;
@@ -65,7 +65,7 @@ typedef struct BuildContext {
     TargetList targets;
     int argument_target_index;
     ThreadPool pool;
-    pthread_mutex_t log_mutex;
+    // pthread_mutex_t log_mutex;
 } BuildContext;
 
 int parse(BuildContext*, const char*);
@@ -73,7 +73,6 @@ int parse(BuildContext*, const char*);
 void add_target(Target*, TargetList*);
 void init_target(Target*, const char*);
 int build_target(Target*, int, BuildContext*);
-// void print_target(Target*);
 
 void build_graph(TargetList*);
 int traverse(TaskQueue*, Target*);
@@ -84,6 +83,7 @@ void enqueue(TaskQueue*, Target*);
 Target* dequeue(TaskQueue*);
 
 void init_build_context(BuildContext*);
-void free_all(BuildContext*);
+void free_irrelevant_targets(BuildContext*);
+void free_rest(BuildContext*);
 
 #endif

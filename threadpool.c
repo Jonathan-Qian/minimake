@@ -66,10 +66,9 @@ void* worker(void* b) {
     BuildContext* build_context = ((BuildContext*) b);
     TaskQueue* queue = &(build_context->pool.queue);
     int code = 0;
+    Target* t;
 
     while (1) {
-        Target* t;
-
         pthread_mutex_lock(&(queue->mutex));
 
         while ((t = dequeue(queue)) == NULL && !build_context->pool.stop) {
@@ -84,11 +83,28 @@ void* worker(void* b) {
 
         code = build_target(t, code, build_context);
 
+        free(t->name);
+
+        for (int i = 0; i < t->num_dependencies_names; i++) {
+            free(t->dependencies_names[i]);
+        }
+
+        free(t->dependencies_names);
+        
+        for (int i = 0; i < t->num_commands; i++) {
+            free(t->commands[i]);
+        }
+
+        free(t->commands);
+        
+
         if (t == build_context->targets.arr[build_context->argument_target_index]) {
             pthread_mutex_lock(&(queue->mutex));
             build_context->pool.stop = true;
             pthread_cond_broadcast(&(queue->cond));
             pthread_mutex_unlock(&(queue->mutex));
+
+            free(t->dependents.arr);
             break;
         }
         else {
@@ -103,6 +119,7 @@ void* worker(void* b) {
 
                 if (d->num_remaining_targets == 0 && (d->flags & TARGET_SCHEDULED) == 0) {
                     pthread_mutex_unlock(&(d->num_mutex));
+
                     enqueue(queue, d);
                     pthread_cond_signal(&(queue->cond));
                     pthread_mutex_unlock(&(queue->mutex));
@@ -112,6 +129,8 @@ void* worker(void* b) {
                     pthread_mutex_unlock(&(queue->mutex));
                 }
             }
+
+            free (t->dependents.arr);
         }
     }
 
