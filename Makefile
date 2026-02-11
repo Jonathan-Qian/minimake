@@ -1,4 +1,4 @@
-OPT = -g -Wall -Wextra
+OPT = -Wall -Wextra
 
 all: minimake
 

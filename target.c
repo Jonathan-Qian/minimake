@@ -10,7 +10,7 @@
 
 #include "defs.h"
 
-static bool up_to_date(Target*, BuildContext*);
+static bool up_to_date(Target*);
 
 void add_target(Target* target, TargetList* list) {
     list->arr = realloc(list->arr, (list->size + 1) * sizeof(Target*));
@@ -33,7 +33,7 @@ void init_target(Target* target, const char* name) {
     target->next = NULL;
 }
 
-int build_target(Target* target, int skip, BuildContext* b) {
+int build_target(Target* target, int skip) {
     target->flags = target->flags | TARGET_BUILDING;
 
     if (skip == ERROR_TARGET_FAILED) {
@@ -41,9 +41,9 @@ int build_target(Target* target, int skip, BuildContext* b) {
         return ERROR_TARGET_FAILED;
     }
     
-    bool u_t_d = up_to_date(target, b);
+    bool utd = up_to_date(target);
     
-    if (!u_t_d) {
+    if (!utd) {
 
         char* command;
         pid_t pid;
@@ -52,9 +52,7 @@ int build_target(Target* target, int skip, BuildContext* b) {
         for (int i = 0; i < target->num_commands; i++) {
             command = target->commands[i];
 
-            // pthread_mutex_lock(&(b->log_mutex));
-            // printf("%s\n", command);
-            // pthread_mutex_unlock(&(b->log_mutex));
+            printf("%s\n", command);
 
             char *argv[MAX_ARGS];
             int i = 0;
@@ -77,9 +75,7 @@ int build_target(Target* target, int skip, BuildContext* b) {
             waitpid(pid, &status, 0);
 
             if (WIFEXITED(status) == 0) {
-                // pthread_mutex_lock(&(b->log_mutex));
-                // fprintf(stderr, "Error: target %s failed building. The following command did not execute properly:\n%s\n", target->name, command);
-                // pthread_mutex_unlock(&(b->log_mutex));
+                fprintf(stderr, "Error: target %s failed building. The following command did not execute properly:\n%s\n", target->name, command);
 
                 target->flags = target->flags | TARGET_FAILED;
 
@@ -90,10 +86,10 @@ int build_target(Target* target, int skip, BuildContext* b) {
 
     target->flags = target->flags | TARGET_BUILT;
     
-    return u_t_d ? 1 : 0;
+    return utd ? 1 : 0;
 }
 
-bool up_to_date(Target* target, BuildContext* b) {
+bool up_to_date(Target* target) {
     struct stat target_stat, dep_stat;
 
     // checking if target exists
@@ -104,9 +100,7 @@ bool up_to_date(Target* target, BuildContext* b) {
     for (int i = 0; i < target->num_dependencies_names; i++) {
         // checking if dependency exists
         if (stat(target->dependencies_names[i], &dep_stat) != 0) {
-            // pthread_mutex_lock(&(b->log_mutex));
-            // fprintf(stderr, "Error: target %s has file dependency %s that could not be accessed.\n", target->name, target->dependencies_names[i]);
-            // pthread_mutex_unlock(&(b->log_mutex));
+            fprintf(stderr, "Error: target %s has file dependency %s that could not be accessed.\n", target->name, target->dependencies_names[i]);
             exit(1);
         }
 

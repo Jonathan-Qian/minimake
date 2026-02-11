@@ -50,6 +50,7 @@ typedef struct Target {
 typedef struct TaskQueue {
     Target* head;
     Target* tail;
+    int num_tasks;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
 } TaskQueue;
@@ -58,21 +59,19 @@ typedef struct ThreadPool {
     pthread_t* threads;
     int num_threads;
     TaskQueue queue;
-    bool stop;
 } ThreadPool;
 
 typedef struct BuildContext {
     TargetList targets;
     int argument_target_index;
     ThreadPool pool;
-    // pthread_mutex_t log_mutex;
 } BuildContext;
 
 int parse(BuildContext*, const char*);
 
 void add_target(Target*, TargetList*);
 void init_target(Target*, const char*);
-int build_target(Target*, int, BuildContext*);
+int build_target(Target*, int);
 
 void build_graph(TargetList*);
 int traverse(TaskQueue*, Target*);
