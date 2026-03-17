@@ -12,11 +12,6 @@
 #define MAX_STR 1024
 #define MAX_ARGS 64
 
-#include <stdint.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <stdbool.h>
-
 typedef enum Flag {
     TARGET_PENDING      = 1 << 0,
     TARGET_BUILDING     = 1 << 1,
@@ -27,62 +22,5 @@ typedef enum Flag {
     TARGET_VISITING     = 1 << 6,
     TARGET_VISITED      = 1 << 7
 } Flag;
-
-typedef struct TargetList {
-    struct Target** arr;
-    int size;
-} TargetList;
-
-typedef struct Target {
-    char* name;
-    char** dependencies_names;
-    int num_dependencies_names;
-    TargetList dependencies; // freed during graph traversal
-    TargetList dependents;
-    char** commands;
-    int num_commands;
-    int num_remaining_targets; // should be the same as dependencies.size until tasks start executing
-    pthread_mutex_t num_mutex;
-    uint8_t flags;
-    struct Target* next;
-} Target;
-
-typedef struct TaskQueue {
-    Target* head;
-    Target* tail;
-    int num_tasks;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-} TaskQueue;
-
-typedef struct ThreadPool {
-    pthread_t* threads;
-    int num_threads;
-    TaskQueue queue;
-} ThreadPool;
-
-typedef struct BuildContext {
-    TargetList targets;
-    int argument_target_index;
-    ThreadPool pool;
-} BuildContext;
-
-int parse(BuildContext*, const char*);
-
-void add_target(Target*, TargetList*);
-void init_target(Target*, const char*);
-int build_target(Target*, int);
-
-void build_graph(TargetList*);
-int traverse(TaskQueue*, Target*);
-
-void init_thread_pool(ThreadPool*, int);
-void complete_tasks(BuildContext*);
-void enqueue(TaskQueue*, Target*);
-Target* dequeue(TaskQueue*);
-
-void init_build_context(BuildContext*);
-void free_irrelevant_targets(BuildContext*);
-void free_rest(BuildContext*);
 
 #endif

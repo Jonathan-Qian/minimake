@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <pthread.h>
 
+#include "target.h"
 #include "defs.h"
 
 static bool up_to_date(Target*);

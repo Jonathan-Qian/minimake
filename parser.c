@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "parser.h"
 #include "defs.h"
 
 static void add_string(char***, int*, const char*);

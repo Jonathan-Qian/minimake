@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "buildcontext.h"
+#include "parser.h"
+#include "graph.h"
 #include "defs.h"
 
 static int get_core_count();

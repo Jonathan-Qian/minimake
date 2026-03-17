@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "graph.h"
 #include "defs.h"
 
 void build_graph(TargetList* targets) {

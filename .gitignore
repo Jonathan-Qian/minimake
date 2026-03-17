@@ -1,3 +1,4 @@
 /minimake*
 /*.o
 /Minimakefile
+/.vscode
