@@ -45,7 +45,7 @@ Whitespaces or the lack of whitespaces are allowed on any line as long as it fol
 
 ## To Do:
 - Allow the use of variables
-- Use '\' as a line continuation and escape character
+- Use '\\' as a line continuation and escape character
 - Allow multiple targets to be built at once (will need hash set)
 - Implement implicit rules
 - Implement phony target behaviour to be like make
