@@ -45,7 +45,6 @@ int build_target(Target* target, int skip) {
     bool utd = up_to_date(target);
     
     if (!utd) {
-
         char* command;
         pid_t pid;
         int status;
@@ -56,30 +55,30 @@ int build_target(Target* target, int skip) {
             printf("%s\n", command);
 
             char *argv[MAX_ARGS];
-            int i = 0;
+            char *saveptr;
+            int arg_count = 0;
+            char *token = strtok_r(command, " ", &saveptr);
 
-            char *token = strtok(command, " ");
-
-            while (token != NULL) {
-                argv[i++] = token;
-                token = strtok(NULL, " ");
+            while (token != NULL && arg_count < MAX_ARGS - 1) {
+                argv[arg_count++] = token;
+                token = strtok_r(NULL, " ", &saveptr);
             }
 
-            argv[i] = NULL;
+            argv[arg_count] = NULL;
 
             pid = fork();
 
             if (pid == 0) {
                 execvp(argv[0], argv);
+                perror("execvp");
+                _exit(127);
             }
 
             waitpid(pid, &status, 0);
 
-            if (WIFEXITED(status) == 0) {
-                fprintf(stderr, "Error: target %s failed building. The following command did not execute properly:\n%s\n", target->name, command);
-
+            if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+                fprintf(stderr, "Error: target %s failed building.\n", target->name);
                 target->flags = target->flags | TARGET_FAILED;
-
                 return ERROR_TARGET_FAILED;
             }
         }

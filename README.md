@@ -55,6 +55,7 @@ The syntax for a Minimakefile is very similar to Makefile syntax.
 - each command must start with a tab character ('\t') (i.e. there cannot be any other whitespace in front of the tab)
 - recipes without a target are not allowed
 - multiple commands for one target are allowed
+- wildcards (ex. `rm -f *.o`) cannot are not allowed yet (see limitations - this will be fixed next)
 
 ### 3. Comments
 - comments are denoted by the '#' character
@@ -81,6 +82,7 @@ Whitespaces or the lack of whitespaces are allowed on any line with these except
 - Inputting multiple command line arguments to make multiple targets at once is not yet supported (ex. make test main)
 - Circular dependencies will only be detected if those dependencies are descendant dependencies of the target provided as a command line argument
 - Likewise, missing files (i.e. dependencies that aren't targets and are missing) will only be detected if the missing files are dependencies of targets that are descendant dependencies of the target provided as a command line argument
+- A performance-friendly solution is being devised to support wildcards in recipe commands
 
 ## To Do
 - Allow the use of variables
@@ -88,3 +90,5 @@ Whitespaces or the lack of whitespaces are allowed on any line with these except
 - Allow multiple targets to be built at once (will need hash set)
 - Implement implicit rules
 - Implement phony target behaviour to be like make
+- Make-style command-line options (-f, -n, -B, -v, -h)
+- Command-line option to toggle printing recipe commands
