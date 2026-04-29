@@ -36,12 +36,19 @@ Whitespaces or the lack of whitespaces are allowed on any line as long as it fol
     - dependencies must be separated from each other by at least one space character (' ')
 
 ## Implemented:
-- Makefile parsing (+invalid syntax detection)
+- Makefile parsing (+ invalid syntax detection)
 - Support for multiple commands per target (recipe)
 - Dependency graph construction
 - Circular dependency detection
 - Failure propagation
 - Scheduler
+
+## To Do:
+- Allow the use of variables
+- Use '\' as a line continuation and escape character
+- Allow multiple targets to be built at once (will need hash set)
+- Implement implicit rules
+- Implement phony target behaviour to be like make
 
 ## Limitations:
 - The program will only read a file named exactly "Minimakefile"
