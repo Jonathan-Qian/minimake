@@ -60,9 +60,9 @@ The syntax for a Minimakefile is very similar to Makefile syntax.
 - comments are denoted by the '#' character
 - inline comments are not allowed
 
-Whitespaces or the lack of whitespaces are allowed on any line with these exceptions as previously st:\
-    - each command must start with a tab character ('\t') (i.e. there cannot be any other whitespace in front of the tab)\
-    - dependencies must be separated from each other by at least one space character (' ')
+Whitespaces or the lack of whitespaces are allowed on any line with these exceptions as previously stated:
+- each command must start with a tab character ('\t') (i.e. there cannot be any other whitespace in front of the tab)
+- dependencies must be separated from each other by at least one space character (' ')
 
 ## Implemented
 - Makefile parsing (+ invalid syntax detection)
